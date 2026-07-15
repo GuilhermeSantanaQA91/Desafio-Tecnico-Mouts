@@ -1,0 +1,30 @@
+# Ignora a pasta de resultados de testes
+cypress/videos/
+cypress/screenshots/
+cypress/downloads/
+cypress/snapshots/
+
+# Ignora arquivos de configuração gerados automaticamente
+cypress.config.js
+
+# Ignora arquivos de build ou dependências
+node_modules/
+dist/
+build/
+coverage/
+
+# Ignora arquivos de lock e logs
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+*.log
+
+# Ignora arquivos temporários
+.tmp/
+.cache/
+.vscode/
+.idea/
+
+# Ignora arquivos de sistema
+.DS_Store
+Thumbs.db

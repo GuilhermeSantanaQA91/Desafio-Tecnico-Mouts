@@ -1,0 +1,30 @@
+.DS_Store
+/node_modules
+
+# Antigravity workspace customizations — versionar
+# .agents/ contém AGENTS.md e Skills do projeto (não ignorar)
+
+# Visual Studio Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.history
+
+# Variáveis de ambiente locais — nunca commitar
+.env
+
+# Cypress
+cypress.env.json
+/cypress/downloads
+/cypress/screenshots
+/cypress/videos
+/cypress/reports
+cypress-mcp-launcher.mjs
+
+# MCP — arquivo temporário com porta CDP do Chrome
+.cypress-mcp-port
+
+# Pessoal
+pessoal
