@@ -5,15 +5,20 @@
 	"main": "index",
 	"scripts": {
 		"postinstall": "cypress install",
+		"prepare": "husky",
 		"clean": "cypress cache clear",
+		"clean:reports": "node -e \"require('fs-extra').removeSync('cypress/reports')\"",
 		"lint": "eslint . --fix",
 		"format": "prettier --write .",
+		"cy:run": "pnpm run clean:reports && cypress run --env env=dev",
+		"cy:run:api": "pnpm run clean:reports && cypress run --env env=dev,grepTags=@api",
+		"cy:run:e2e": "pnpm run clean:reports && cypress run --env env=dev,grepTags=@e2e",
+		"cy:run:report": "pnpm run cy:run",
 		"cy:open": "cypress open --env env=dev",
-		"cy:run": "cypress run --env env=dev",
-		"cy:run:report": "cypress run --env env=dev && pnpm run cy:report",
-		"cy:report": "cypress-mochawesome-reporter merge",
+		"cy:open:api": "cypress open --env env=dev,grepTags=@api",
+		"cy:open:e2e": "cypress open --env env=dev,grepTags=@e2e",
 		"cy:open:mcp": "cypress open --env env=dev,mcpDebug=true,mcpPort=60562 --e2e --browser=chrome",
-		"prepare": "husky"
+		"cy:report": "npx cypress-mochawesome-reporter merge"
 	},
 	"keywords": [
 		"cypress",

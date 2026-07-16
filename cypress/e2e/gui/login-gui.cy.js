@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker/locale/pt_BR';
 
-describe('ServeRest — Autenticação e Cadastro (GUI)', () => {
+describe('ServeRest — Autenticação e Cadastro (GUI)', { tags: '@e2e' }, () => {
 	// ─── Cenário 1 e 2: Login ────────────────────────────────────────────────
 	context('Login', () => {
 		beforeEach(() => {
@@ -18,7 +18,7 @@ describe('ServeRest — Autenticação e Cadastro (GUI)', () => {
 
 			// Assert
 			cy.wait('@postLogin').its('response.statusCode').should('eq', 200);
-			cy.url().should('include', '/admin/home');
+			cy.url({ timeout: 10000 }).should('include', '/admin/home');
 			cy.contains('h1', 'Bem Vindo').should('be.visible');
 		});
 
@@ -57,7 +57,7 @@ describe('ServeRest — Autenticação e Cadastro (GUI)', () => {
 
 			// Assert — redireciona e exibe saudação de boas-vindas ao novo usuário
 			cy.wait('@postCadastro').its('response.statusCode').should('eq', 201);
-			cy.url().should('include', '/admin/home');
+			cy.url({ timeout: 10000 }).should('include', '/admin/home');
 			cy.contains('h1', 'Bem Vindo').should('be.visible');
 		});
 

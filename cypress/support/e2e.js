@@ -1,3 +1,6 @@
+import { register } from '@cypress/grep';
+register();
+
 import 'cypress-plugin-api';
 import './commands';
 

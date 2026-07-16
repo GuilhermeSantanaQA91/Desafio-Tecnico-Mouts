@@ -8,10 +8,10 @@ const MSG = {
 	emailDuplicado: 'Este email já está sendo usado',
 };
 
-describe('ServeRest API — Usuários e Autenticação', () => {
+describe('ServeRest API — Usuários e Autenticação', { tags: '@api' }, () => {
 	// ─── Cenário 1: GET /usuarios ────────────────────────────────────────────
 	context('GET /usuarios', () => {
-		it('Deve listar usuários e validar o contrato de resposta de até 5 itens aleatórios', () => {
+		it('Deve listar e validar o contrato de resposta de até 5 usuários aleatórios', () => {
 			// Arrange
 			const url = `${Cypress.env('API_URL')}/usuarios`;
 

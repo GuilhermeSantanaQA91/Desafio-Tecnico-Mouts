@@ -46,7 +46,7 @@ export default [
 	},
 
 	{
-		files: ['*.config.js', '*.config.mjs', 'cypress/**/*.config.js'],
+		files: ['*.config.js', '*.config.mjs', 'cypress/**/*.config.js', 'cypress-mcp-launcher.mjs'],
 		languageOptions: {
 			ecmaVersion: 'latest',
 			sourceType: 'module',

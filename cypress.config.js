@@ -25,7 +25,7 @@ module.exports = defineConfig({
 		// pelo script `cy:report` (cypress-mochawesome-reporter merge).
 		reporter: 'cypress-multi-reporters',
 		reporterOptions: {
-			reporterEnabled: 'spec, cypress-mochawesome-reporter',
+			reporterEnabled: 'cypress-mochawesome-reporter',
 			cypressMochawesomeReporterReporterOptions: {
 				reportDir: 'cypress/reports/mochawesome',
 				overwrite: false,
@@ -37,6 +37,11 @@ module.exports = defineConfig({
 		},
 
 		setupNodeEvents(on, config) {
+			// ─── Cypress Grep ─────────────────────────────────────────────────────
+			config.env.grepFilterSpecs = true;
+			const { plugin: cypressGrep } = require('@cypress/grep/plugin');
+			cypressGrep(config);
+
 			// ─── Mochawesome Reporter ─────────────────────────────────────────────
 			require('cypress-mochawesome-reporter/plugin')(on);
 			// ─── Chrome DevTools MCP ───────────────────────────────────────────────

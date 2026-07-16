@@ -205,7 +205,7 @@ cy.api({ method: 'GET', url: '/usuarios' }).then(({ body }) => {
 
 ## Validação de arrays grandes (Prevenir Poluição do Runner)
 
-Nunca itere sobre respostas inteiras quando o array for grande (ex: `body.usuarios.forEach`), pois isso gera milhares de *assertions* e trava o Cypress Runner. Use `Cypress._.sampleSize()` para validar um subconjunto aleatório:
+Nunca itere sobre respostas inteiras quando o array for grande (ex: `body.usuarios.forEach`), pois isso gera milhares de _assertions_ e trava o Cypress Runner. Use `Cypress._.sampleSize()` para validar um subconjunto aleatório:
 
 ```js
 // ✅ Correto — valida até 5 itens aleatórios, mantendo o Runner limpo
