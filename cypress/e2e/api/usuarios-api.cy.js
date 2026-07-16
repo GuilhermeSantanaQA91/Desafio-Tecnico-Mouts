@@ -11,29 +11,14 @@ const MSG = {
 describe('ServeRest API — Usuários e Autenticação', { tags: '@api' }, () => {
 	// ─── Cenário 1: GET /usuarios ────────────────────────────────────────────
 	context('GET /usuarios', () => {
-		it('Deve listar e validar o contrato de resposta de até 5 usuários aleatórios', () => {
+		it('Deve listar e validar o contrato de resposta de todos os usuarios cadastrados', () => {
 			// Arrange
 			const url = `${Cypress.env('API_URL')}/usuarios`;
 
 			// Act + Assert
 			cy.api({ method: 'GET', url }).then(({ status, body }) => {
 				expect(status).to.eq(200);
-				// Contrato de envelope (swagger: getUsuarios)
-				expect(body).to.have.all.keys('quantidade', 'usuarios');
-				expect(body.quantidade).to.be.a('number').and.be.greaterThan(0);
-				expect(body.usuarios).to.be.an('array').and.have.length.greaterThan(0);
-
-				// Contrato de itens do array (amostragem para não poluir o Cypress Runner)
-				// Usa Lodash (embutido no Cypress) para pegar até 5 usuários aleatórios da lista
-				const sample = Cypress._.sampleSize(body.usuarios, 5);
-				sample.forEach((usuario) => {
-					expect(usuario).to.have.all.keys('nome', 'email', 'password', 'administrador', '_id');
-					expect(usuario.nome).to.be.a('string').and.not.be.empty;
-					expect(usuario.email).to.be.a('string').and.include('@');
-					expect(usuario.password).to.be.a('string').and.not.be.empty;
-					expect(usuario.administrador).to.be.oneOf(['true', 'false']);
-					expect(usuario._id).to.be.a('string').and.not.be.empty;
-				});
+				cy.validarContrato('getUsuarios', body);
 			});
 		});
 	});
@@ -49,13 +34,9 @@ describe('ServeRest API — Usuários e Autenticação', { tags: '@api' }, () =>
 
 			// Act + Assert
 			cy.loginApi(payload).then(({ status, body }) => {
-				// Contrato de sucesso (swagger: loginComSucesso)
 				expect(status).to.eq(200);
-				expect(body).to.have.all.keys('message', 'authorization');
+				cy.validarContrato('loginComSucesso', body);
 				expect(body.message).to.eq(MSG.loginSucesso);
-				expect(body.authorization)
-					.to.be.a('string')
-					.and.match(/^Bearer\s.+/);
 			});
 		});
 
@@ -69,9 +50,8 @@ describe('ServeRest API — Usuários e Autenticação', { tags: '@api' }, () =>
 
 			// Act + Assert
 			cy.loginApi(payload, { failOnStatusCode: false }).then(({ status, body }) => {
-				// Contrato de erro (swagger: errorEmailSenhaInvalidos)
 				expect(status).to.eq(401);
-				expect(body).to.have.all.keys('message');
+				cy.validarContrato('errorEmailSenhaInvalidos', body);
 				expect(body.message).to.eq(MSG.loginInvalido);
 			});
 		});
@@ -92,20 +72,17 @@ describe('ServeRest API — Usuários e Autenticação', { tags: '@api' }, () =>
 
 			// Act — cria o usuário
 			cy.criarUsuarioApi(payload).then(({ status, body }) => {
-				// Assert — contrato de criação (swagger: cadastroComSucesso)
 				expect(status).to.eq(201);
-				expect(body).to.have.all.keys('message', '_id');
+				cy.validarContrato('cadastroComSucesso', body);
 				expect(body.message).to.eq(MSG.cadastroSucesso);
-				expect(body._id).to.be.a('string').and.not.be.empty;
 
 				// Act — busca o usuário criado por ID (swagger: GET /usuarios/{_id})
 				cy.api({
 					method: 'GET',
 					url: `${Cypress.env('API_URL')}/usuarios/${body._id}`,
 				}).then(({ status: getStatus, body: getBody }) => {
-					// Assert — contrato de resposta (swagger: getUsuariosId)
 					expect(getStatus).to.eq(200);
-					expect(getBody).to.have.all.keys('nome', 'email', 'password', 'administrador', '_id');
+					cy.validarContrato('getUsuariosId', getBody);
 					expect(getBody.nome).to.eq(payload.nome);
 					expect(getBody.email).to.eq(payload.email);
 					expect(getBody.administrador).to.eq(payload.administrador);
@@ -125,9 +102,8 @@ describe('ServeRest API — Usuários e Autenticação', { tags: '@api' }, () =>
 
 			// Act + Assert
 			cy.criarUsuarioApi(payloadDuplicado, { failOnStatusCode: false }).then(({ status, body }) => {
-				// Contrato de erro (swagger: errorEmailJaUtilizado)
 				expect(status).to.eq(400);
-				expect(body).to.have.all.keys('message');
+				cy.validarContrato('errorEmailJaUtilizado', body);
 				expect(body.message).to.eq(MSG.emailDuplicado);
 			});
 		});

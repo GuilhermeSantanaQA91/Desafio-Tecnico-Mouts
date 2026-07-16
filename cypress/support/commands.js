@@ -1,4 +1,7 @@
-﻿// Custom commands — adicione aqui os comandos globais reutilizáveis do projeto.
+import Ajv from 'ajv';
+import addFormats from 'ajv-formats';
+
+// Custom commands — adicione aqui os comandos globais reutilizáveis do projeto.
 // Documentação: https://docs.cypress.io/api/cypress-api/custom-commands
 
 /**
@@ -60,4 +63,32 @@ Cypress.Commands.add('cadastrarUsuarioGui', (nome, email, password) => {
 	cy.get('[data-testid="password"]').type(password, { log: false });
 	cy.get('[data-testid="checkbox"]').check();
 	cy.get('[data-testid="cadastrar"]').click();
+});
+
+// ─── Comandos de Validação de Contrato (Ajv) ───────────────────────────────────
+
+Cypress.Commands.add('validarContrato', (schemaName, data) => {
+	cy.fixture('swagger.json').then((swaggerJson) => {
+		const ajv = new Ajv({ allErrors: true, strict: false });
+		addFormats(ajv);
+
+		// Adiciona o swaggerJson como esquema raiz com o id 'swagger'
+		ajv.addSchema(swaggerJson, 'swagger');
+
+		// Obtém o validador correspondente ao esquema específico
+		const validate = ajv.getSchema(`swagger#/components/schemas/${schemaName}`);
+
+		if (!validate) {
+			throw new Error(`Esquema '${schemaName}' não foi encontrado no swagger.json`);
+		}
+
+		const valid = validate(data);
+
+		if (!valid) {
+			const formattedErrors = validate.errors.map((err) => `${err.instancePath || '/'} ${err.message} (${JSON.stringify(err.params)})`).join('\n');
+			throw new Error(`Falha na validação de contrato para o esquema '${schemaName}':\n${formattedErrors}`);
+		}
+
+		cy.log(`[Contrato] Sucesso ao validar contra o esquema '${schemaName}'`);
+	});
 });

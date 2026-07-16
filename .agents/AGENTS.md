@@ -43,6 +43,12 @@ cypress/
 - Nunca hardcodar dados sensíveis — usar `Cypress.env('CHAVE')` ou `cypress.env.json` (não versionado)
 - Usar `{ log: false }` ao tipar senhas e tokens
 
+## Regras de Versionamento e Commit
+
+- As mensagens de commit devem ser escritas sempre em **Português**.
+- Adotar a especificação de **Conventional Commits** (ex: `feat(teste): ...`, `chore(config): ...`).
+- Manter a mensagem do commit direta, concisa e simplificada. Mesmo ao realizar commits que agrupam várias alterações, evite descrever detalhadamente cada arquivo modificado na mensagem do commit, focando no objetivo geral do conjunto de mudanças.
+
 ## Skills disponíveis
 
 - `cypress-e2e` → guia completo para testes E2E / GUI (seletores, esperas, intercepts, mocking)
