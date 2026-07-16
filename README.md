@@ -67,6 +67,8 @@ Rodar testes executando e gerando o relatório HTML consolidado Mochawesome:
 pnpm run cy:run:report
 ```
 
+> **💡 Dica sobre relatórios:** A execução padrão (`cy:run`, `cy:run:api`, `cy:run:e2e`) gera apenas arquivos `.json` de dados brutos para otimização de performance. O arquivo visual final (`index.html`) é gerado estritamente através dos comandos que acionam o script `cy:report` (como o `cy:run:report`).
+
 ## 🤖 CI/CD e Relatórios
 
 Este projeto utiliza **GitHub Actions** para execução contínua. Toda vez que ocorre um push ou um Pull Request para a branch `main`, a pipeline é engatilhada rodando os jobs separados para `@api` e `@e2e` paralelamente.
