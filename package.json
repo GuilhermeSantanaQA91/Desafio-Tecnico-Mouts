@@ -19,7 +19,7 @@
 		"cy:open:api": "cypress open --env env=dev,grepTags=@api",
 		"cy:open:e2e": "cypress open --env env=dev,grepTags=@e2e",
 		"cy:open:mcp": "cypress open --env env=dev,mcpDebug=true,mcpPort=60562 --e2e --browser=chrome",
-		"cy:report": "npx cypress-mochawesome-reporter merge"
+		"cy:report": "node cypress-report.js"
 	},
 	"keywords": [
 		"cypress",

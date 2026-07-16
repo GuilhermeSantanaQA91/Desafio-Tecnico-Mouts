@@ -61,6 +61,7 @@ jobs:
         with:
           name: reports-api
           path: cypress/reports/mochawesome/
+          include-hidden-files: true
           if-no-files-found: warn
 
   cypress-run-e2e:
@@ -104,6 +105,7 @@ jobs:
         with:
           name: reports-e2e
           path: cypress/reports/mochawesome/
+          include-hidden-files: true
           if-no-files-found: warn
 
   publish-report:
@@ -140,20 +142,35 @@ jobs:
       - name: Instalar dependências (somente pacotes, sem Cypress)
         run: pnpm install --frozen-lockfile --ignore-scripts
 
-      # Baixa os JSONs gerados pelos jobs anteriores — sem reexecutar os testes
+      # Baixa os JSONs gerados pelos jobs anteriores em pastas separadas para evitar colisão de nomes
       - name: Download dos relatórios JSON (API)
         uses: actions/download-artifact@v4
         with:
           name: reports-api
-          path: cypress/reports/mochawesome/
+          path: cypress/reports/api-json/
         continue-on-error: true
 
       - name: Download dos relatórios JSON (E2E)
         uses: actions/download-artifact@v4
         with:
           name: reports-e2e
-          path: cypress/reports/mochawesome/
+          path: cypress/reports/e2e-json/
         continue-on-error: true
+
+      # Move os arquivos JSON para a pasta .jsons final adicionando prefixo exclusivo
+      - name: Mover e renomear relatórios JSON
+        run: |
+          mkdir -p cypress/reports/mochawesome/.jsons
+          if [ -d "cypress/reports/api-json/.jsons" ]; then
+            for f in cypress/reports/api-json/.jsons/*.json; do
+              [ -e "$f" ] && mv "$f" "cypress/reports/mochawesome/.jsons/api-$(basename "$f")"
+            done
+          fi
+          if [ -d "cypress/reports/e2e-json/.jsons" ]; then
+            for f in cypress/reports/e2e-json/.jsons/*.json; do
+              [ -e "$f" ] && mv "$f" "cypress/reports/mochawesome/.jsons/e2e-$(basename "$f")"
+            done
+          fi
 
       # Merge dos JSONs e geração do HTML unificado
       - name: Mesclar relatórios e gerar HTML
