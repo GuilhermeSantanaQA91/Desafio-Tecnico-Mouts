@@ -1,0 +1,105 @@
+name: Cypress Tests — CI
+
+on:
+  push:
+    branches:
+      - main
+      - 'feat/**'
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  cypress-run-api:
+    name: API Tests (@api)
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+
+      - name: Instalar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Instalar pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - name: Instalar dependências e Cypress
+        uses: cypress-io/github-action@v6
+        with:
+          runTests: false
+          install-command: pnpm install --frozen-lockfile
+
+      - name: Executar testes de API
+        uses: cypress-io/github-action@v6
+        with:
+          install: false
+          command: pnpm run cy:run:api
+
+  cypress-run-e2e:
+    name: E2E Tests (@e2e)
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+
+      - name: Instalar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Instalar pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - name: Instalar dependências e Cypress
+        uses: cypress-io/github-action@v6
+        with:
+          runTests: false
+          install-command: pnpm install --frozen-lockfile
+
+      - name: Executar testes E2E
+        uses: cypress-io/github-action@v6
+        with:
+          install: false
+          command: pnpm run cy:run:e2e
+
+  publish-report:
+    name: Publicar Relatório HTML (GitHub Pages)
+    runs-on: ubuntu-24.04
+    needs: [cypress-run-api, cypress-run-e2e]
+    if: always()
+
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+
+      - name: Instalar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Instalar pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - name: Instalar dependências
+        run: pnpm install --frozen-lockfile
+
+      - name: Executar todos os testes e gerar relatório
+        run: pnpm run cy:run:report
+        continue-on-error: true
+
+      - name: Upload do relatório Mochawesome
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-report
+          path: cypress/reports/mochawesome/
+          if-no-files-found: warn
