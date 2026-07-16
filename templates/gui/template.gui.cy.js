@@ -15,6 +15,7 @@ describe('Funcionalidade — Contexto', () => {
 		cy.wait('@enviarFormulario');
 
 		// Assert
-		cy.get('[data-testid="mensagem-sucesso"]').should('be.visible');
+		// Preferir validação de texto explícita usando contains (Regra do Workspace)
+		cy.contains('[data-testid="mensagem-sucesso"]', 'Sucesso!').should('be.visible');
 	});
 });

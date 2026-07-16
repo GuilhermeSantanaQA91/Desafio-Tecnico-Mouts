@@ -29,4 +29,21 @@ describe('API — <Recurso>', () => {
 			expect(body).to.have.property('message');
 		});
 	});
+
+	it('Deve validar o contrato de resposta com sucesso', () => {
+		// Arrange
+		const url = '/<rota>';
+		const schema = require('../../fixtures/<schema>.json');
+
+		// Act
+		cy.api({
+			method: 'GET',
+			url,
+		}).then(({ status, body }) => {
+			// Assert
+			expect(status).to.eq(200);
+			// Validação estrutural do contrato de API (Ajv)
+			cy.validarContrato(schema, body);
+		});
+	});
 });
