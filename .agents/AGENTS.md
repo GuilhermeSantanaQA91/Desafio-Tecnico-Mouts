@@ -24,6 +24,7 @@ Ferramenta de IA: Antigravity (Gemini). Não referenciar VSCode Copilot, GitHub 
 - Máximo de 3 asserts explícitos por `it()` — focar no comportamento principal
 - Títulos de testes (`it()`) devem ser literais e explícitos sobre o que está sendo testado e como (ex: evite termos abstratos como "amostragem", prefira "validar até 5 itens aleatórios").
 - Não usar Page Objects. Extraia PROATIVAMENTE qualquer sequência de ações repetidas (preencher formulários, chamadas de API como login/cadastro) para Custom Commands no `cypress/support/commands.js`. Nunca duplique fluxos de ação nos `it()`.
+- Sempre preferir validação estrutural de contratos de API via comando customizado `cy.validarContrato(schema, dados)` (que utiliza o `Ajv` sob o capô) em vez de múltiplos `expect` manuais de tipos e chaves no runner. Isso simplifica a leitura dos testes, valida 100% da resposta sem requerer amostragem e evita poluição visual de asserções no Cypress Runner.
 
 ## Estrutura de arquivos
 

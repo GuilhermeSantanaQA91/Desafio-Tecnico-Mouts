@@ -171,14 +171,13 @@ cy.api({
 
 ## Validação de estrutura de resposta
 
-Use `.to.have.all.keys()` para validar contratos de payload:
+**Preferencial**: Use o comando customizado `cy.validarContrato(schemaName, body)` para fazer validação automática e silenciosa usando o `Ajv` e a especificação `swagger.json`.
 
 ```js
-cy.api({ method: 'GET', url: '/usuarios' }).then(({ body }) => {
-	expect(body).to.have.all.keys('quantidade', 'usuarios');
-	body.usuarios.forEach((usuario) => {
-		expect(usuario).to.have.all.keys('nome', 'email', 'administrador', '_id');
-	});
+// ✅ Correto - Uso do Ajv dinâmico
+cy.api({ method: 'GET', url: '/usuarios' }).then(({ status, body }) => {
+	expect(status).to.eq(200);
+	cy.validarContrato('getUsuarios', body);
 });
 ```
 
@@ -205,15 +204,17 @@ cy.api({ method: 'GET', url: '/usuarios' }).then(({ body }) => {
 
 ## Validação de arrays grandes (Prevenir Poluição do Runner)
 
-Nunca itere sobre respostas inteiras quando o array for grande (ex: `body.usuarios.forEach`), pois isso gera milhares de _assertions_ e trava o Cypress Runner. Use `Cypress._.sampleSize()` para validar um subconjunto aleatório:
+Se não estiver utilizando o `Ajv` e optar por asserções manuais via `expect`, nunca itere sobre respostas inteiras quando o array for grande (ex: `body.usuarios.forEach`), pois isso gera milhares de _assertions_ e trava o Cypress Runner. Use `Cypress._.sampleSize()` para validar um subconjunto aleatório:
 
 ```js
-// ✅ Correto — valida até 5 itens aleatórios, mantendo o Runner limpo
+// ✅ Correto (se asserções forem manuais) — valida até 5 itens aleatórios, mantendo o Runner limpo
 const amostra = Cypress._.sampleSize(body.usuarios, 5);
 amostra.forEach((usuario) => {
 	expect(usuario).to.have.all.keys('nome', 'email');
 });
 ```
+
+> **Nota**: Ao validar via `cy.validarContrato()`, a validação do array é feita de forma síncrona na memória do JavaScript sem poluir o Cypress Runner, dispensando a amostragem de dados e validando o array completo.
 
 ---
 
