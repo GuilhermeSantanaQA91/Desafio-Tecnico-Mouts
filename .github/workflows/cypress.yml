@@ -9,6 +9,14 @@ on:
     branches:
       - main
 
+env:
+  CYPRESS_CACHE_FOLDER: ~/.cache/Cypress
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 jobs:
   cypress-run-api:
     name: API Tests (@api)
@@ -18,27 +26,32 @@ jobs:
       - name: Checkout do repositório
         uses: actions/checkout@v4
 
-      - name: Instalar Node.js
+      - name: Instalar Node.js e pnpm (via corepack)
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
-      - name: Instalar pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 11
+      - name: Habilitar corepack e instalar pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.12.0 --activate
 
-      - name: Instalar dependências e Cypress
-        uses: cypress-io/github-action@v6
+      - name: Instalar dependências
+        run: pnpm install --frozen-lockfile
+
+      - name: Instalar binário do Cypress (cache)
+        uses: actions/cache@v4
+        id: cypress-cache
         with:
-          runTests: false
-          install-command: pnpm install --frozen-lockfile
+          path: ~/.cache/Cypress
+          key: cypress-${{ runner.os }}-${{ hashFiles('package.json') }}
+
+      - name: Instalar Cypress se não estiver em cache
+        if: steps.cypress-cache.outputs.cache-hit != 'true'
+        run: pnpm exec cypress install
 
       - name: Executar testes de API
-        uses: cypress-io/github-action@v6
-        with:
-          install: false
-          command: pnpm run cy:run:api
+        run: pnpm run cy:run:api
 
   cypress-run-e2e:
     name: E2E Tests (@e2e)
@@ -51,30 +64,38 @@ jobs:
       - name: Instalar Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
-      - name: Instalar pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 11
+      - name: Habilitar corepack e instalar pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.12.0 --activate
 
-      - name: Instalar dependências e Cypress
-        uses: cypress-io/github-action@v6
+      - name: Instalar dependências
+        run: pnpm install --frozen-lockfile
+
+      - name: Instalar binário do Cypress (cache)
+        uses: actions/cache@v4
+        id: cypress-cache
         with:
-          runTests: false
-          install-command: pnpm install --frozen-lockfile
+          path: ~/.cache/Cypress
+          key: cypress-${{ runner.os }}-${{ hashFiles('package.json') }}
+
+      - name: Instalar Cypress se não estiver em cache
+        if: steps.cypress-cache.outputs.cache-hit != 'true'
+        run: pnpm exec cypress install
 
       - name: Executar testes E2E
-        uses: cypress-io/github-action@v6
-        with:
-          install: false
-          command: pnpm run cy:run:e2e
+        run: pnpm run cy:run:e2e
 
   publish-report:
-    name: Publicar Relatório HTML (GitHub Pages)
+    name: Publicar Relatório no GitHub Pages
     runs-on: ubuntu-24.04
     needs: [cypress-run-api, cypress-run-e2e]
     if: always()
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
       - name: Checkout do repositório
@@ -83,23 +104,39 @@ jobs:
       - name: Instalar Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
-      - name: Instalar pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 11
+      - name: Habilitar corepack e instalar pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.12.0 --activate
 
       - name: Instalar dependências
         run: pnpm install --frozen-lockfile
+
+      - name: Instalar binário do Cypress (cache)
+        uses: actions/cache@v4
+        id: cypress-cache
+        with:
+          path: ~/.cache/Cypress
+          key: cypress-${{ runner.os }}-${{ hashFiles('package.json') }}
+
+      - name: Instalar Cypress se não estiver em cache
+        if: steps.cypress-cache.outputs.cache-hit != 'true'
+        run: pnpm exec cypress install
 
       - name: Executar todos os testes e gerar relatório
         run: pnpm run cy:run:report
         continue-on-error: true
 
-      - name: Upload do relatório Mochawesome
-        uses: actions/upload-artifact@v4
+      - name: Configurar GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Fazer upload do relatório para o Pages
+        uses: actions/upload-pages-artifact@v3
         with:
-          name: cypress-report
           path: cypress/reports/mochawesome/
-          if-no-files-found: warn
+
+      - name: Publicar no GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
