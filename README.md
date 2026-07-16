@@ -62,7 +62,7 @@ Abrir a interface interativa do Cypress:
 pnpm run cy:open
 ```
 
-Gerar relatório consolidado Mochawesome:
+Rodar testes executando e gerando o relatório HTML consolidado Mochawesome:
 ```bash
 pnpm run cy:run:report
 ```
@@ -80,7 +80,7 @@ Após a execução bem-sucedida, o relatório de testes em HTML é gerado automa
 1. **Validação de Contrato**: Utilização do `Ajv` para realizar validações estruturais de API em massa, evitando múltiplos `expect` no corpo do teste.
 2. **Separação de Responsabilidades**: Lógicas de requisições de API repetitivas foram extraídas para Custom Commands (`cypress/support/commands.js`), evitando Page Objects.
 3. **Massa de Dados Dinâmica**: Uso do `@faker-js/faker` para nomes, e-mails, senhas, prevenindo falsos positivos por conflito de dados no banco.
-4. **Isolamento de Estado**: Cypress lida perfeitamente com cookies e local storage via `testIsolation: true`.
+4. **Isolamento de Estado**: `testIsolation` é habilitado por padrão no Cypress 12+ (limpa cookies/storage entre testes). Não é configurado explicitamente pois o padrão já atende o projeto.
 5. **Asserções de Interface**: Foco em verificar estado visível ao invés de buscar por tags com `cy.contains(selector, text)`.
 
 ## 📝 Licença

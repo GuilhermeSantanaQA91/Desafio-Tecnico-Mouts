@@ -24,7 +24,8 @@ Ferramenta de IA: Antigravity (Gemini). Não referenciar VSCode Copilot, GitHub 
 - Máximo de 3 asserts explícitos por `it()` — focar no comportamento principal
 - Títulos de testes (`it()`) devem ser literais e explícitos sobre o que está sendo testado e como (ex: evite termos abstratos como "amostragem", prefira "validar até 5 itens aleatórios").
 - Não usar Page Objects. Extraia PROATIVAMENTE qualquer sequência de ações repetidas (preencher formulários, chamadas de API como login/cadastro) para Custom Commands no `cypress/support/commands.js`. Nunca duplique fluxos de ação nos `it()`.
-- Sempre preferir validação estrutural de contratos de API via comando customizado `cy.validarContrato(schema, dados)` (que utiliza o `Ajv` sob o capô) em vez de múltiplos `expect` manuais de tipos e chaves no runner. Isso simplifica a leitura dos testes, valida 100% da resposta sem requerer amostragem e evita poluição visual de asserções no Cypress Runner.
+- Sempre preferir validação estrutural de contratos de API via comando customizado `cy.validarContrato('nomeDoSchema', dados)` (que utiliza o `Ajv` sob o capô) em vez de múltiplos `expect` manuais de tipos e chaves no runner. O primeiro argumento é sempre uma **string** com o nome do schema (ex: `'getUsuarios'`, `'loginComSucesso'`), não um objeto JSON. Isso simplifica a leitura dos testes, valida 100% da resposta sem requerer amostragem e evita poluição visual de asserções no Cypress Runner.
+- Não usar `return false` global no `uncaught:exception`. Ignorar apenas erros externos conhecidos e documentados por mensagem. Erros reais da aplicação devem propagar e falhar o teste.
 
 ## Estrutura de arquivos
 
@@ -43,6 +44,28 @@ cypress/
 
 - Nunca hardcodar dados sensíveis — usar `Cypress.env('CHAVE')` ou `cypress.env.json` (não versionado)
 - Usar `{ log: false }` ao tipar senhas e tokens
+
+## Variáveis de ambiente disponíveis (dev.settings.json)
+
+| Chave           | Descrição                                           |
+| --------------- | ----------------------------------------------------- |
+| `USER_EMAIL`    | Email do usuário fixo de testes                       |
+| `USER_PASSWORD` | Senha do usuário fixo de testes                       |
+| `USER_NAME`     | Nome completo do usuário fixo (usado em assert GUI)   |
+| `API_URL`       | Base URL da API ServeRest                             |
+| `BASE_URL`      | Base URL do front-end ServeRest                       |
+
+## Custom Commands disponíveis (commands.js)
+
+| Comando                    | Descrição                                                  |
+| -------------------------- | ------------------------------------------------------------ |
+| `cy.loginViaApi()`         | Login via API, armazena token em `BEARER_TOKEN`              |
+| `cy.loginApi(payload)`     | POST /login via cy.api() — retorna resposta completa         |
+| `cy.criarUsuarioApi()`     | POST /usuarios via cy.api() — retorna resposta completa      |
+| `cy.deletarUsuarioApi(id)` | DELETE /usuarios/:id — usado em cleanup pós-criação         |
+| `cy.loginGui()`            | Preenche e submete formulário de login                       |
+| `cy.cadastrarUsuarioGui()` | Preenche e submete formulário de cadastro                    |
+| `cy.validarContrato()`     | Valida body contra schema Ajv (1º arg: string com nome)      |
 
 ## Regras de Versionamento e Commit
 

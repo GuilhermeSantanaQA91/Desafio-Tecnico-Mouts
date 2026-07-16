@@ -33,7 +33,8 @@ describe('API — <Recurso>', () => {
 	it('Deve validar o contrato de resposta com sucesso', () => {
 		// Arrange
 		const url = '/<rota>';
-		const schema = require('../../fixtures/<schema>.json');
+		// O nome do schema deve corresponder a uma chave em swagger#/components/schemas/<nomeDoSchema>
+		// Exemplos: 'getUsuarios', 'loginComSucesso', 'cadastroComSucesso'
 
 		// Act
 		cy.api({
@@ -42,8 +43,9 @@ describe('API — <Recurso>', () => {
 		}).then(({ status, body }) => {
 			// Assert
 			expect(status).to.eq(200);
-			// Validação estrutural do contrato de API (Ajv)
-			cy.validarContrato(schema, body);
+			// Validação estrutural do contrato de API (Ajv) — passe o NOME do schema, não o objeto
+			cy.validarContrato('<nomeDoSchema>', body);
 		});
 	});
 });
+

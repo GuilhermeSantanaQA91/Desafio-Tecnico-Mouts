@@ -4,8 +4,17 @@ register();
 import 'cypress-plugin-api';
 import './commands';
 
-// Ignora erros não tratados para evitar falha dos testes
-Cypress.on('uncaught:exception', (_err, _runnable) => {
-	// retornar false aqui impede que o Cypress falhe o teste
-	return false;
+// Ignora apenas erros externos conhecidos e documentados do ServeRest/front.
+// NÃO retorne false de forma global: erros reais da aplicação devem falhar o teste.
+Cypress.on('uncaught:exception', (error) => {
+	const errorsConhecidos = [
+		// ResizeObserver loop — erro cosmético de navegador, não afeta a aplicação
+		'ResizeObserver loop limit exceeded',
+		'ResizeObserver loop completed with undelivered notifications',
+	];
+
+	if (errorsConhecidos.some((msg) => error.message.includes(msg))) {
+		return false;
+	}
+	// Qualquer outro erro propaga e falha o teste
 });

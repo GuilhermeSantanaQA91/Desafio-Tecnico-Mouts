@@ -12,6 +12,7 @@ describe('ServeRest — Autenticação e Cadastro (GUI)', { tags: '@e2e' }, () =
 			// Arrange
 			const email = Cypress.env('USER_EMAIL');
 			const senha = Cypress.env('USER_PASSWORD');
+			const nomeEsperado = Cypress.env('USER_NAME');
 
 			// Act
 			cy.loginGui(email, senha);
@@ -19,7 +20,8 @@ describe('ServeRest — Autenticação e Cadastro (GUI)', { tags: '@e2e' }, () =
 			// Assert
 			cy.wait('@postLogin').its('response.statusCode').should('eq', 200);
 			cy.url({ timeout: 10000 }).should('include', '/admin/home');
-			cy.contains('h1', 'Bem Vindo').should('be.visible');
+			// Valida que o nome do usuário logado aparece na saudação
+			cy.contains('h1', nomeEsperado).should('be.visible');
 		});
 
 		it('Deve exibir mensagem de erro ao tentar login com credenciais inválidas', () => {
@@ -55,10 +57,11 @@ describe('ServeRest — Autenticação e Cadastro (GUI)', { tags: '@e2e' }, () =
 			// Act
 			cy.cadastrarUsuarioGui(nome, email, senha);
 
-			// Assert — redireciona e exibe saudação de boas-vindas ao novo usuário
+			// Assert — redireciona e exibe saudação com o nome exato cadastrado
 			cy.wait('@postCadastro').its('response.statusCode').should('eq', 201);
 			cy.url({ timeout: 10000 }).should('include', '/admin/home');
-			cy.contains('h1', 'Bem Vindo').should('be.visible');
+			// Valida que o nome recém-cadastrado aparece na saudação (não apenas o texto genérico)
+			cy.contains('h1', nome).should('be.visible');
 		});
 
 		it('Deve exibir mensagem de erro ao tentar cadastrar com email já existente', () => {

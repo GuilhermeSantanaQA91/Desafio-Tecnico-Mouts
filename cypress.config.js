@@ -29,7 +29,7 @@ module.exports = defineConfig({
 			cypressMochawesomeReporterReporterOptions: {
 				reportDir: 'cypress/reports/mochawesome',
 				overwrite: false,
-				html: false,
+				html: true,
 				json: true,
 				inlineAssets: true,
 				saveAllAttempts: false,

@@ -47,6 +47,15 @@ Cypress.Commands.add('criarUsuarioApi', (payload, { failOnStatusCode = true } = 
 	});
 });
 
+Cypress.Commands.add('deletarUsuarioApi', (id) => {
+	cy.log(`[API] DELETE /usuarios/${id}`);
+	return cy.api({
+		method: 'DELETE',
+		url: `${Cypress.env('API_URL')}/usuarios/${id}`,
+		failOnStatusCode: false,
+	});
+});
+
 // ─── Comandos de GUI (App Actions) ───────────────────────────────────────────
 
 Cypress.Commands.add('loginGui', (email, password) => {

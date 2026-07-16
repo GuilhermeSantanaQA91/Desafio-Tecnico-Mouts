@@ -2,5 +2,6 @@
 	"BASE_URL": "https://front.serverest.dev",
 	"API_URL": "https://serverest.dev",
 	"USER_EMAIL": "fulano@qa.com",
-	"USER_PASSWORD": "teste"
+	"USER_PASSWORD": "teste",
+	"USER_NAME": "Fulano da Silva"
 }

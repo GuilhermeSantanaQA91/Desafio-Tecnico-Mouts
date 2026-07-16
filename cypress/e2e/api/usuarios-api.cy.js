@@ -76,10 +76,12 @@ describe('ServeRest API — Usuários e Autenticação', { tags: '@api' }, () =>
 				cy.validarContrato('cadastroComSucesso', body);
 				expect(body.message).to.eq(MSG.cadastroSucesso);
 
+				const userId = body._id;
+
 				// Act — busca o usuário criado por ID (swagger: GET /usuarios/{_id})
 				cy.api({
 					method: 'GET',
-					url: `${Cypress.env('API_URL')}/usuarios/${body._id}`,
+					url: `${Cypress.env('API_URL')}/usuarios/${userId}`,
 				}).then(({ status: getStatus, body: getBody }) => {
 					expect(getStatus).to.eq(200);
 					cy.validarContrato('getUsuariosId', getBody);
@@ -87,6 +89,9 @@ describe('ServeRest API — Usuários e Autenticação', { tags: '@api' }, () =>
 					expect(getBody.email).to.eq(payload.email);
 					expect(getBody.administrador).to.eq(payload.administrador);
 				});
+
+				// Cleanup — remove o usuário criado para não acumular massa residual
+				cy.deletarUsuarioApi(userId);
 			});
 		});
 

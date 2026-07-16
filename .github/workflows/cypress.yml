@@ -36,15 +36,17 @@ jobs:
           corepack enable
           corepack prepare pnpm@11.12.0 --activate
 
-      - name: Instalar dependências
-        run: pnpm install --frozen-lockfile
-
-      - name: Instalar binário do Cypress (cache)
+      # Cache restaurado ANTES do install para evitar reinstalação quando há cache-hit
+      - name: Restaurar cache do binário do Cypress
         uses: actions/cache@v4
         id: cypress-cache
         with:
           path: ~/.cache/Cypress
           key: cypress-${{ runner.os }}-${{ hashFiles('package.json') }}
+
+      # --ignore-scripts evita que o postinstall reinstale o Cypress (binário já em cache)
+      - name: Instalar dependências
+        run: pnpm install --frozen-lockfile --ignore-scripts
 
       - name: Instalar Cypress se não estiver em cache
         if: steps.cypress-cache.outputs.cache-hit != 'true'
@@ -52,6 +54,14 @@ jobs:
 
       - name: Executar testes de API
         run: pnpm run cy:run:api
+
+      - name: Upload dos relatórios JSON (API)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reports-api
+          path: cypress/reports/mochawesome/
+          if-no-files-found: warn
 
   cypress-run-e2e:
     name: E2E Tests (@e2e)
@@ -71,15 +81,15 @@ jobs:
           corepack enable
           corepack prepare pnpm@11.12.0 --activate
 
-      - name: Instalar dependências
-        run: pnpm install --frozen-lockfile
-
-      - name: Instalar binário do Cypress (cache)
+      - name: Restaurar cache do binário do Cypress
         uses: actions/cache@v4
         id: cypress-cache
         with:
           path: ~/.cache/Cypress
           key: cypress-${{ runner.os }}-${{ hashFiles('package.json') }}
+
+      - name: Instalar dependências
+        run: pnpm install --frozen-lockfile --ignore-scripts
 
       - name: Instalar Cypress se não estiver em cache
         if: steps.cypress-cache.outputs.cache-hit != 'true'
@@ -88,10 +98,19 @@ jobs:
       - name: Executar testes E2E
         run: pnpm run cy:run:e2e
 
+      - name: Upload dos relatórios JSON (E2E)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reports-e2e
+          path: cypress/reports/mochawesome/
+          if-no-files-found: warn
+
   publish-report:
     name: Publicar Relatório no GitHub Pages
     runs-on: ubuntu-24.04
     needs: [cypress-run-api, cypress-run-e2e]
+    # Executa sempre (mesmo com falhas), mas preserva o status de falha no final
     if: always()
     environment:
       name: github-pages
@@ -111,23 +130,34 @@ jobs:
           corepack enable
           corepack prepare pnpm@11.12.0 --activate
 
-      - name: Instalar dependências
-        run: pnpm install --frozen-lockfile
-
-      - name: Instalar binário do Cypress (cache)
+      - name: Restaurar cache do binário do Cypress
         uses: actions/cache@v4
         id: cypress-cache
         with:
           path: ~/.cache/Cypress
           key: cypress-${{ runner.os }}-${{ hashFiles('package.json') }}
 
-      - name: Instalar Cypress se não estiver em cache
-        if: steps.cypress-cache.outputs.cache-hit != 'true'
-        run: pnpm exec cypress install
+      - name: Instalar dependências (somente pacotes, sem Cypress)
+        run: pnpm install --frozen-lockfile --ignore-scripts
 
-      - name: Executar todos os testes e gerar relatório
-        run: pnpm run cy:run:report
+      # Baixa os JSONs gerados pelos jobs anteriores — sem reexecutar os testes
+      - name: Download dos relatórios JSON (API)
+        uses: actions/download-artifact@v4
+        with:
+          name: reports-api
+          path: cypress/reports/mochawesome/
         continue-on-error: true
+
+      - name: Download dos relatórios JSON (E2E)
+        uses: actions/download-artifact@v4
+        with:
+          name: reports-e2e
+          path: cypress/reports/mochawesome/
+        continue-on-error: true
+
+      # Merge dos JSONs e geração do HTML unificado
+      - name: Mesclar relatórios e gerar HTML
+        run: pnpm run cy:report
 
       - name: Configurar GitHub Pages
         uses: actions/configure-pages@v5
@@ -140,3 +170,11 @@ jobs:
       - name: Publicar no GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      # Falha explicitamente o job de relatório se os testes quebraram
+      # Preserva o status vermelho no histórico do Actions
+      - name: Falhar se testes falharam
+        if: needs.cypress-run-api.result == 'failure' || needs.cypress-run-e2e.result == 'failure'
+        run: |
+          echo "❌ Testes falharam. Relatório publicado, mas pipeline marcada como falha."
+          exit 1
